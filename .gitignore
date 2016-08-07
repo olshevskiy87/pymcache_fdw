@@ -1,0 +1,10 @@
+*.sw[pno]
+*.py[co]
+~
+.ropeproject
+
+env
+
+build
+dist
+*.egg-info
