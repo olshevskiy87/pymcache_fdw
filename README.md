@@ -14,38 +14,38 @@ installation
 
 1. install python module
 
-```bash
-$ cd /path/to/pymcache_fdw
-$ python setup.py install
-```
+    ```bash
+    $ cd /path/to/pymcache_fdw
+    $ python setup.py install
+    ```
 
 2. create extension "multicorn"
 
-```sql
-$$ create extension multicorn;
-```
+    ```sql
+    $$ create extension multicorn;
+    ```
 
 3. create foreign server in database
 
-```sql
-$$ CREATE SERVER pymcache_fdw
-FOREIGN DATA WRAPPER multicorn
-OPTIONS (
-    wrapper 'pymcache_fdw.PymcacheFDW'
-);
-```
+    ```sql
+    $$ CREATE SERVER pymcache_fdw
+    FOREIGN DATA WRAPPER multicorn
+    OPTIONS (
+        wrapper 'pymcache_fdw.PymcacheFDW'
+    );
+    ```
 
 4. create foreign table
 
-```sql
-$$ CREATE FOREIGN TABLE pymcache_test (
-    key TEXT,
-    value TEXT
-) SERVER pymcache_fdw OPTIONS (
-    host 'localhost',
-    port '11211'
-);
-```
+    ```sql
+    $$ CREATE FOREIGN TABLE pymcache_test (
+        key TEXT,
+        value TEXT
+    ) SERVER pymcache_fdw OPTIONS (
+        host 'localhost',
+        port '11211'
+    );
+    ```
 
 usage
 -----
