@@ -12,10 +12,23 @@ class PymcacheFDW(ForeignDataWrapper):
     host = 'localhost'
     port = 11211
 
+    _client = None
+
     columns = []
+    _row_id_name = ''
 
     def __init__(self, options, columns):
         super(PymcacheFDW, self).__init__(options, columns)
+
+        self.columns = columns
+
+        if 'row_id' in options:
+            self._row_id_name = options['row_id']
+        else:
+            self._row_id_name = list(self.columns.keys())[0]
+            log_to_postgres(
+                'Using first column as row_id name: %s' % self._row_id_name,
+                WARNING)
 
         # memcache host name
         if 'host' in options:
@@ -29,7 +42,16 @@ class PymcacheFDW(ForeignDataWrapper):
         else:
             log_to_postgres('Using default port: %s' % self.port, WARNING)
 
-        self.columns = columns
+        try:
+            self._client = Client(
+                (self.host, self.port),
+                serializer=self.json_serializer,
+                deserializer=self.json_deserializer
+            )
+        except Exception as e:
+            log_to_postgres(
+                'could not connect to memcache: %s' % str(e),
+                ERROR)
 
     def json_serializer(self, key, value):
         if isinstance(value, str):
@@ -45,8 +67,10 @@ class PymcacheFDW(ForeignDataWrapper):
             return json.loads(value)
         raise Exception('Unknown serialization format')
 
-    # exec sql query
+    # exec sql select-query
     def execute(self, quals, columns):
+        log_to_postgres('exec quals: %s' % quals, DEBUG)
+        log_to_postgres('exec columns: %s' % columns, DEBUG)
 
         # define cache key
         cache_keys = []
@@ -68,16 +92,7 @@ class PymcacheFDW(ForeignDataWrapper):
             log_to_postgres('cache keys are not specified', DEBUG)
             return
 
-        # cache "value", check column name
-        if 'value' not in columns:
-            log_to_postgres('there must be a "value" column', ERROR)
-
-        client = Client(
-            (self.host, self.port),
-            serializer=self.json_serializer,
-            deserializer=self.json_deserializer
-        )
-        res_rows = client.get_multi(keys=cache_keys)
+        res_rows = self._client.get_multi(keys=cache_keys)
 
         for row in res_rows.iteritems():
             row_ord = OrderedDict()
@@ -87,14 +102,31 @@ class PymcacheFDW(ForeignDataWrapper):
             row_ord['value'] = row[1]
             yield row_ord
 
-        client.close()
+    @property
+    def rowid_column(self):
+        log_to_postgres('rowid requested', DEBUG)
+        return self._row_id_name
 
-    def insert(self, new_values):
-        log_to_postgres('insert, new values: %s' % new_values, DEBUG)
+    # exec insert-query
+    def insert(self, val):
+        log_to_postgres('insert value: %s' % val, DEBUG)
 
-    def update(self, rowid, new_values):
-        log_to_postgres('update, rowid: %s' % new_values, DEBUG)
-        log_to_postgres('update, new values: %s' % new_values, DEBUG)
+        if 'key' not in val or 'value' not in val:
+            log_to_postgres('"key" and "value" must be specified', ERROR)
 
-    def delete(self, rowid):
-        log_to_postgres('delete, rowid: %s' % rowid, DEBUG)
+        try:
+            self._client.set(val['key'], val['value'])
+        except Exception as e:
+            log_to_postgres(
+                'could not set cache item %s: %s' % (val, str(e)),
+                ERROR)
+
+    # exec delete-query
+    def delete(self, key):
+        log_to_postgres('delete cache with key: %s' % key, DEBUG)
+        try:
+            self._client.delete(key)
+        except Exception as e:
+            log_to_postgres(
+                'could not delete cache item with key "%s": %s' % (key, str(e)),
+                ERROR)

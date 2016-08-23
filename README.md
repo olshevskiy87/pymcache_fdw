@@ -43,35 +43,41 @@ installation
         value TEXT
     ) SERVER pymcache_fdw OPTIONS (
         host 'localhost',
-        port '11211'
+        port '11211',
+        row_id 'key'
     );
     ```
 
 usage
 -----
 
-- with set of keys in "where" clause
+- set cache item
 
 ```sql
-$$ select * from pymcache_test where key in ('k3', 'k1', 'k4');
-
- key |  value
------+----------
- k3  | test 2
- k1  | test 1
- k4  | [1, 2]
-(4 rows)
+$$ insert into pymcache_test(key, value)
+   values('meaning_of_life', '42');
+INSERT 0 1
 ```
 
-- with one exact cache key and one field "value" in results
+- get cache items with set of keys in "where" clause
 
 ```sql
-$$ select value from pymcache_test where key = 'k3';
+$$ select key, value
+   from pymcache_test
+   where key in ('meaning_of_life', 'k1');
 
- value
---------
- test 2
+key              | value
+-----------------+-------
+meaning_of_life  | 42
 (1 row)
+```
+
+- delete cache item with key `meaning_of_life`
+
+```sql
+$$ delete from pymcache_test
+   where key = 'meaning_of_life';
+DELETE 1
 ```
 
 external links
