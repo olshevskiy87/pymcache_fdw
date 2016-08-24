@@ -102,7 +102,7 @@ todo
 ----
 
  - [x] use "expire" parameter
- - [ ] use named parameters when calling pymemcache methods
+ - [x] use named parameters when calling pymemcache methods
  - [ ] add "update" query implementation
  - [ ] set proper PymcacheFDW -> pymemcache methods mapping
 

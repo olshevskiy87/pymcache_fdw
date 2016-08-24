@@ -129,7 +129,7 @@ class PymcacheFDW(ForeignDataWrapper):
             expire_cur = int(val['expire'])
 
         try:
-            self._client.set(val['key'], val['value'], expire_cur)
+            self._client.set(val['key'], val['value'], expire=expire_cur)
         except Exception as e:
             log_to_postgres(
                 'could not set cache item %s: %s' % (val, str(e)),
