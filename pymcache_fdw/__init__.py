@@ -1,5 +1,4 @@
 import json
-from collections import OrderedDict
 
 from multicorn import ForeignDataWrapper
 from multicorn.utils import log_to_postgres, DEBUG, WARNING, ERROR
@@ -82,7 +81,9 @@ class PymcacheFDW(ForeignDataWrapper):
         log_to_postgres('exec quals: %s' % quals, DEBUG)
         log_to_postgres('exec columns: %s' % columns, DEBUG)
 
-        # define cache key
+        key_column_exist = 'key' in columns
+
+        # define cache keys
         cache_keys = []
         for q in quals:
             if (q.field_name != 'key' or
@@ -105,12 +106,10 @@ class PymcacheFDW(ForeignDataWrapper):
         res_rows = self._client.get_multi(keys=cache_keys)
 
         for row in res_rows.iteritems():
-            row_ord = OrderedDict()
-            if 'key' in columns:
-                row_ord['key'] = row[0]
-
-            row_ord['value'] = row[1]
-            yield row_ord
+            ret = {'value': row[1]}
+            if key_column_exist:
+                ret['key'] = row[0]
+            yield ret
 
     @property
     def rowid_column(self):
@@ -118,21 +117,21 @@ class PymcacheFDW(ForeignDataWrapper):
         return self._row_id_name
 
     # exec insert-query
-    def insert(self, val):
-        log_to_postgres('insert value: %s' % val, DEBUG)
+    def insert(self, item):
+        log_to_postgres('insert value: %s' % item, DEBUG)
 
-        if 'key' not in val or 'value' not in val:
+        if 'key' not in item or 'value' not in item:
             log_to_postgres('"key" and "value" must be specified', ERROR)
 
         expire_cur = self._expire
-        if 'expire' in val and val['expire'] is not None:
-            expire_cur = int(val['expire'])
+        if 'expire' in item and item['expire'] is not None:
+            expire_cur = int(item['expire'])
 
         try:
-            self._client.set(val['key'], val['value'], expire=expire_cur)
+            self._client.set(item['key'], item['value'], expire=expire_cur)
         except Exception as e:
             log_to_postgres(
-                'could not set cache item %s: %s' % (val, str(e)),
+                'could not set cache item %s: %s' % (item, str(e)),
                 ERROR)
 
     # exec delete-query
