@@ -16,18 +16,28 @@ class PymcacheFDW(ForeignDataWrapper):
 
     columns = []
     _row_id_name = ''
+    _expire = 0
 
     def __init__(self, options, columns):
         super(PymcacheFDW, self).__init__(options, columns)
 
         self.columns = columns
 
+        # row_id column name
         if 'row_id' in options:
             self._row_id_name = options['row_id']
         else:
             self._row_id_name = list(self.columns.keys())[0]
             log_to_postgres(
                 'Using first column as row_id name: %s' % self._row_id_name,
+                WARNING)
+
+        # "expire" value
+        if 'expire' in options and options['expire'] is not None:
+            self._expire = int(options['expire'])
+        else:
+            log_to_postgres(
+                'Using default "expire" value: %s' % self._expire,
                 WARNING)
 
         # memcache host name
@@ -114,8 +124,12 @@ class PymcacheFDW(ForeignDataWrapper):
         if 'key' not in val or 'value' not in val:
             log_to_postgres('"key" and "value" must be specified', ERROR)
 
+        expire_cur = self._expire
+        if 'expire' in val and val['expire'] is not None:
+            expire_cur = int(val['expire'])
+
         try:
-            self._client.set(val['key'], val['value'])
+            self._client.set(val['key'], val['value'], expire_cur)
         except Exception as e:
             log_to_postgres(
                 'could not set cache item %s: %s' % (val, str(e)),

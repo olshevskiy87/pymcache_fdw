@@ -91,7 +91,10 @@ external links
 todo
 ----
 
- - [ ] use "expire" parameter
+ - [x] use "expire" parameter
+ - [ ] use named parameters when calling pymemcache methods
+ - [ ] add "update" query implementation
+ - [ ] set proper PymcacheFDW -> pymemcache methods mapping
 
 license
 -------
