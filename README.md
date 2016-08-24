@@ -40,11 +40,13 @@ installation
     ```sql
     $$ CREATE FOREIGN TABLE pymcache_test (
         key TEXT,
-        value TEXT
+        value TEXT,
+        expire TEXT -- optional
     ) SERVER pymcache_fdw OPTIONS (
         host 'localhost',
         port '11211',
-        row_id 'key'
+        row_id 'key',
+        expire '60' -- optional, default is 0 - never expire
     );
     ```
 
@@ -56,6 +58,14 @@ usage
 ```sql
 $$ insert into pymcache_test(key, value)
    values('meaning_of_life', '42');
+INSERT 0 1
+```
+
+- set cache item, that will expire after 10 seconds
+
+```sql
+$$ insert into pymcache_test(key, value, expire)
+   values('born_to_die', 'Lana Del Rey', 10);
 INSERT 0 1
 ```
 
