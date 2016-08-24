@@ -1,6 +1,6 @@
 *.sw[pno]
 *.py[co]
-~
+*~
 .ropeproject
 
 env
