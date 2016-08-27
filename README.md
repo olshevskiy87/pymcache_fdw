@@ -154,6 +154,8 @@ todo
  - [x] use named parameters when calling pymemcache methods
  - [x] add "update" query implementation
  - [x] set proper PymcacheFDW -> pymemcache methods mapping
+ - [ ] implement `stats items/settings/slabs/sizes/conns` commands
+ - [ ] move `host` and `port` classes attributes to `__init__` as local variables
 
 license
 -------
