@@ -69,6 +69,15 @@ $$ insert into pymcache_test(key, value, expire)
 INSERT 0 1
 ```
 
+- update cache item with key `born_to_die`
+
+```sql
+$$ update pymcache_test
+   set value = 'Grand Funk Railroad', expire = 300
+   where key = 'born_to_die'
+UPDATE 1
+```
+
 - get cache items with set of keys in "where" clause
 
 ```sql
@@ -103,8 +112,8 @@ todo
 
  - [x] use "expire" parameter
  - [x] use named parameters when calling pymemcache methods
- - [ ] add "update" query implementation
- - [ ] set proper PymcacheFDW -> pymemcache methods mapping
+ - [x] add "update" query implementation
+ - [x] set proper PymcacheFDW -> pymemcache methods mapping
 
 license
 -------

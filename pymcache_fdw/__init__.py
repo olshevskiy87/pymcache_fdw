@@ -62,6 +62,15 @@ class PymcacheFDW(ForeignDataWrapper):
                 'could not connect to memcache: %s' % str(e),
                 ERROR)
 
+    def _get_expire(self, item=None):
+        ret = self._expire
+        if item is not None:
+            try:
+                ret = int(item['expire'])
+            except:
+                pass
+        return ret
+
     def json_serializer(self, key, value):
         if isinstance(value, str):
             return value, 1
@@ -123,12 +132,32 @@ class PymcacheFDW(ForeignDataWrapper):
         if 'key' not in item or 'value' not in item:
             log_to_postgres('"key" and "value" must be specified', ERROR)
 
-        expire_cur = self._expire
-        if 'expire' in item and item['expire'] is not None:
-            expire_cur = int(item['expire'])
+        try:
+            res = self._client.add(
+                item['key'],
+                item['value'],
+                expire=self._get_expire(item),
+                noreply=False)
+            if not res:
+                raise Exception('key "%s" is already exist' % item['key'])
+        except Exception as e:
+            log_to_postgres(
+                'could not add cache item: %s' % str(e),
+                ERROR)
+
+    # exec update-query
+    def update(self, key, item):
+        log_to_postgres('key: %s' % key, DEBUG)
+        log_to_postgres('new values: %s' % item, DEBUG)
+
+        if 'value' not in item:
+            log_to_postgres('"value" must be specified', ERROR)
 
         try:
-            self._client.set(item['key'], item['value'], expire=expire_cur)
+            self._client.set(
+                key,
+                item['value'],
+                expire=self._get_expire(item))
         except Exception as e:
             log_to_postgres(
                 'could not set cache item %s: %s' % (item, str(e)),
