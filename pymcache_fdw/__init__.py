@@ -5,11 +5,10 @@ from multicorn.utils import log_to_postgres, DEBUG, WARNING, ERROR
 
 from pymemcache.client.base import Client
 
+import defaults
+
 
 class PymcacheFDW(ForeignDataWrapper):
-
-    host = 'localhost'
-    port = 11211
 
     _client = None
 
@@ -43,12 +42,14 @@ class PymcacheFDW(ForeignDataWrapper):
         if 'host' in options:
             self.host = options['host']
         else:
+            self.host = defaults.host
             log_to_postgres('Using default host: %s' % self.host, WARNING)
 
         # memcache port
         if 'port' in options:
             self.port = int(options['port'])
         else:
+            self.port = int(defaults.port)
             log_to_postgres('Using default port: %s' % self.port, WARNING)
 
         try:
@@ -172,3 +173,43 @@ class PymcacheFDW(ForeignDataWrapper):
             log_to_postgres(
                 'could not delete cache item with key "%s": %s' % (key, str(e)),
                 ERROR)
+
+
+class PymcacheFDWStats(ForeignDataWrapper):
+
+    _client = None
+
+    def __init__(self, options, columns):
+        super(PymcacheFDWStats, self).__init__(options, columns)
+
+        # memcache host name
+        if 'host' in options:
+            self.host = options['host']
+        else:
+            self.host = defaults.host
+            log_to_postgres('Using default host: %s' % self.host, WARNING)
+
+        # memcache port
+        if 'port' in options:
+            self.port = int(options['port'])
+        else:
+            self.port = int(defaults.port)
+            log_to_postgres('Using default port: %s' % self.port, WARNING)
+
+        try:
+            self._client = Client((self.host, self.port))
+        except Exception as e:
+            log_to_postgres(
+                'could not connect to memcache: %s' % str(e),
+                ERROR)
+
+    # exec sql select-query
+    def execute(self, quals, columns):
+        stats = {}
+        try:
+            stats = self._client.stats()
+        except Exception as e:
+            log_to_postgres('could not get statistics: %s' % str(e), ERROR)
+
+        for stat in stats.iteritems():
+            yield stat

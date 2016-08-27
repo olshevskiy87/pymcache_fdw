@@ -27,6 +27,8 @@ installation
 
 3. create foreign server in database
 
+- foreign server to operate cache items
+
     ```sql
     $$ CREATE SERVER pymcache_fdw
     FOREIGN DATA WRAPPER multicorn
@@ -35,7 +37,19 @@ installation
     );
     ```
 
+- foreign server to show statistics
+
+    ```sql
+    $$ CREATE SERVER pymcache_fdw_stat
+    FOREIGN DATA WRAPPER multicorn
+    OPTIONS (
+        wrapper 'pymcache_fdw.PymcacheFDWStats'
+    );
+    ```
+
 4. create foreign table
+
+- foreign table to operate cache items
 
     ```sql
     $$ CREATE FOREIGN TABLE pymcache_test (
@@ -48,6 +62,15 @@ installation
         row_id 'key',
         expire '60' -- optional, default is 0 - never expire
     );
+    ```
+
+- foreign table to show general-purpose statistics
+
+    ```sql
+    $$ CREATE FOREIGN TABLE pymcache_stat_test (
+        stat_name TEXT,
+        stat_value TEXT
+    ) SERVER pymcache_fdw_stat;
     ```
 
 usage
@@ -97,6 +120,23 @@ meaning_of_life  | 42
 $$ delete from pymcache_test
    where key = 'meaning_of_life';
 DELETE 1
+```
+
+- show general-purpose statistics related to connections
+
+```sql
+$$ select stat_name, stat_value
+   from pymcache_stat_test
+   where stat_name ~* 'connection';
+
+WARNING:  Using default host: localhost
+WARNING:  Using default port: 11211
+       stat_name       | stat_value
+-----------------------+------------
+ curr_connections      | 6
+ total_connections     | 31
+ connection_structures | 7
+(3 rows)
 ```
 
 external links
