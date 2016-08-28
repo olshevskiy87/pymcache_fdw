@@ -63,7 +63,7 @@ class PymcacheFDW(ForeignDataWrapper):
         if 'row_id' in options:
             self._row_id_name = options['row_id']
         else:
-            self._row_id_name = list(columns.keys())[0]
+            self._row_id_name = columns.keys()[0]
             log_to_postgres(
                 'Using first column as row_id name: %s' % self._row_id_name,
                 WARNING)
