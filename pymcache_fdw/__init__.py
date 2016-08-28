@@ -39,22 +39,22 @@ class PymcacheFDW(ForeignDataWrapper):
                 WARNING)
 
         # memcache host name
+        host = defaults.host
         if 'host' in options:
-            self.host = options['host']
+            host = options['host']
         else:
-            self.host = defaults.host
-            log_to_postgres('Using default host: %s' % self.host, WARNING)
+            log_to_postgres('Using default host: %s' % host, WARNING)
 
         # memcache port
+        port = int(defaults.port)
         if 'port' in options:
-            self.port = int(options['port'])
+            port = int(options['port'])
         else:
-            self.port = int(defaults.port)
-            log_to_postgres('Using default port: %s' % self.port, WARNING)
+            log_to_postgres('Using default port: %s' % port, WARNING)
 
         try:
             self._client = Client(
-                (self.host, self.port),
+                (host, port),
                 serializer=self.json_serializer,
                 deserializer=self.json_deserializer
             )
@@ -183,21 +183,21 @@ class PymcacheFDWStats(ForeignDataWrapper):
         super(PymcacheFDWStats, self).__init__(options, columns)
 
         # memcache host name
+        host = defaults.host
         if 'host' in options:
-            self.host = options['host']
+            host = options['host']
         else:
-            self.host = defaults.host
-            log_to_postgres('Using default host: %s' % self.host, WARNING)
+            log_to_postgres('Using default host: %s' % host, WARNING)
 
         # memcache port
+        port = int(defaults.port)
         if 'port' in options:
-            self.port = int(options['port'])
+            port = int(options['port'])
         else:
-            self.port = int(defaults.port)
-            log_to_postgres('Using default port: %s' % self.port, WARNING)
+            log_to_postgres('Using default port: %s' % port, WARNING)
 
         try:
-            self._client = Client((self.host, self.port))
+            self._client = Client((host, port))
         except Exception as e:
             log_to_postgres(
                 'could not connect to memcache: %s' % str(e),
