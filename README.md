@@ -156,7 +156,7 @@ todo
  - [x] set proper PymcacheFDW -> pymemcache methods mapping
  - [ ] implement `stats items/settings/slabs/sizes/conns` commands
  - [x] move `host` and `port` classes attributes to `__init__` as local variables
- - [ ] move connection procedure to separate method
+ - [x] move connection procedure to separate method
 
 license
 -------

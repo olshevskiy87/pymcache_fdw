@@ -8,9 +8,50 @@ from pymemcache.client.base import Client
 import defaults
 
 
-class PymcacheFDW(ForeignDataWrapper):
+def _json_serializer(key, value):
+    if isinstance(value, str):
+        return value, 1
+    elif isinstance(value, unicode):
+        return value, 0
+    return json.dumps(value), 2
 
-    _client = None
+
+def _json_deserializer(key, value, flags):
+    if flags in [0, 1]:
+        return value
+    if flags == 2:
+        return json.loads(value)
+    raise Exception('Unknown serialization format')
+
+
+def _connect(options):
+    # memcache host name
+    host = defaults.host
+    if 'host' in options:
+        host = options['host']
+    else:
+        log_to_postgres('Using default host: %s' % host, WARNING)
+
+    # memcache port
+    port = int(defaults.port)
+    if 'port' in options:
+        port = int(options['port'])
+    else:
+        log_to_postgres('Using default port: %s' % port, WARNING)
+
+    client = None
+    try:
+        client = Client(
+            (host, port),
+            serializer=_json_serializer,
+            deserializer=_json_deserializer
+        )
+    except Exception as e:
+        log_to_postgres('could not connect to memcache: %s' % str(e), ERROR)
+    return client
+
+
+class PymcacheFDW(ForeignDataWrapper):
 
     _row_id_name = ''
     _expire = 0
@@ -35,30 +76,7 @@ class PymcacheFDW(ForeignDataWrapper):
                 'Using default "expire" value: %s' % self._expire,
                 WARNING)
 
-        # memcache host name
-        host = defaults.host
-        if 'host' in options:
-            host = options['host']
-        else:
-            log_to_postgres('Using default host: %s' % host, WARNING)
-
-        # memcache port
-        port = int(defaults.port)
-        if 'port' in options:
-            port = int(options['port'])
-        else:
-            log_to_postgres('Using default port: %s' % port, WARNING)
-
-        try:
-            self._client = Client(
-                (host, port),
-                serializer=self.json_serializer,
-                deserializer=self.json_deserializer
-            )
-        except Exception as e:
-            log_to_postgres(
-                'could not connect to memcache: %s' % str(e),
-                ERROR)
+        self._client = _connect(options)
 
     def _get_expire(self, item=None):
         ret = self._expire
@@ -68,20 +86,6 @@ class PymcacheFDW(ForeignDataWrapper):
             except:
                 pass
         return ret
-
-    def json_serializer(self, key, value):
-        if isinstance(value, str):
-            return value, 1
-        elif isinstance(value, unicode):
-            return value, 0
-        return json.dumps(value), 2
-
-    def json_deserializer(self, key, value, flags):
-        if flags in [0, 1]:
-            return value
-        if flags == 2:
-            return json.loads(value)
-        raise Exception('Unknown serialization format')
 
     # exec sql select-query
     def execute(self, quals, columns):
@@ -174,31 +178,10 @@ class PymcacheFDW(ForeignDataWrapper):
 
 class PymcacheFDWStats(ForeignDataWrapper):
 
-    _client = None
-
     def __init__(self, options, columns):
         super(PymcacheFDWStats, self).__init__(options, columns)
 
-        # memcache host name
-        host = defaults.host
-        if 'host' in options:
-            host = options['host']
-        else:
-            log_to_postgres('Using default host: %s' % host, WARNING)
-
-        # memcache port
-        port = int(defaults.port)
-        if 'port' in options:
-            port = int(options['port'])
-        else:
-            log_to_postgres('Using default port: %s' % port, WARNING)
-
-        try:
-            self._client = Client((host, port))
-        except Exception as e:
-            log_to_postgres(
-                'could not connect to memcache: %s' % str(e),
-                ERROR)
+        self._client = _connect(options)
 
     # exec sql select-query
     def execute(self, quals, columns):
