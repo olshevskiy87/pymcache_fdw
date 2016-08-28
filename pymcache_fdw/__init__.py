@@ -12,20 +12,17 @@ class PymcacheFDW(ForeignDataWrapper):
 
     _client = None
 
-    columns = []
     _row_id_name = ''
     _expire = 0
 
     def __init__(self, options, columns):
         super(PymcacheFDW, self).__init__(options, columns)
 
-        self.columns = columns
-
         # row_id column name
         if 'row_id' in options:
             self._row_id_name = options['row_id']
         else:
-            self._row_id_name = list(self.columns.keys())[0]
+            self._row_id_name = list(columns.keys())[0]
             log_to_postgres(
                 'Using first column as row_id name: %s' % self._row_id_name,
                 WARNING)
