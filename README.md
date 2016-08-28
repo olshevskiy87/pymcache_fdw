@@ -27,7 +27,7 @@ installation
 
 3. create foreign server in database
 
-- foreign server to operate cache items
+ - foreign server to operate cache items
 
     ```sql
     $$ CREATE SERVER pymcache_fdw
@@ -37,7 +37,7 @@ installation
     );
     ```
 
-- foreign server to show statistics
+ - foreign server to show statistics
 
     ```sql
     $$ CREATE SERVER pymcache_fdw_stat
@@ -49,7 +49,7 @@ installation
 
 4. create foreign table
 
-- foreign table to operate cache items
+ - foreign table to operate cache items
 
     ```sql
     $$ CREATE FOREIGN TABLE pymcache_test (
@@ -64,7 +64,7 @@ installation
     );
     ```
 
-- foreign table to show general-purpose statistics
+ - foreign table to show general-purpose statistics
 
     ```sql
     $$ CREATE FOREIGN TABLE pymcache_stat_test (
