@@ -172,6 +172,7 @@ external links
 - [PostgreSQL foreign data wrappers](https://wiki.postgresql.org/wiki/Foreign_data_wrappers) (postgres wiki)
 - [Multicorn](http://multicorn.org) - postgres extension that allows to make FDW with python language
 - [Memcached](https://memcached.org) - distributed memory object caching system
+- [memcached protocol](https://github.com/memcached/memcached/blob/master/doc/protocol.txt)
 - [Pymemcache](https://pymemcache.readthedocs.io/en/latest) python module documentation
 
 todo
