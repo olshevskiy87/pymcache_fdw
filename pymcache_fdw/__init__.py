@@ -3,7 +3,7 @@ import json
 from multicorn import ForeignDataWrapper
 from multicorn.utils import log_to_postgres, DEBUG, WARNING, ERROR
 
-from pymemcache.client.base import Client
+from pymemcache.client.base import Client, MemcacheUnknownCommandError
 
 import defaults
 
@@ -178,8 +178,22 @@ class PymcacheFDW(ForeignDataWrapper):
 
 class PymcacheFDWStats(ForeignDataWrapper):
 
+    allowed_stats_cmds = ['items', 'settings', 'slabs', 'sizes', 'conns']
+
+    # current stats command
+    # by default show general-purpose statistics (empty stats command)
+    _stats_cmd = ''
+
     def __init__(self, options, columns):
         super(PymcacheFDWStats, self).__init__(options, columns)
+
+        if 'stats_cmd' in options:
+            if options['stats_cmd'] in self.allowed_stats_cmds:
+                self._stats_cmd = options['stats_cmd']
+            else:
+                log_to_postgres(
+                    'stats command "%s" is not allowed' % options['stats_cmd'],
+                    ERROR)
 
         self._client = _connect(options)
 
@@ -187,9 +201,15 @@ class PymcacheFDWStats(ForeignDataWrapper):
     def execute(self, quals, columns):
         stats = {}
         try:
-            stats = self._client.stats()
+            stats = self._client.stats(self._stats_cmd)
+        except MemcacheUnknownCommandError as e:
+            log_to_postgres(
+                'unknown memcache command "%s": %s' % (self._stats_cmd, str(e)),
+                ERROR)
         except Exception as e:
-            log_to_postgres('could not get statistics: %s' % str(e), ERROR)
+            log_to_postgres(
+                'could not get statistics: %s' % str(e),
+                ERROR)
 
         for stat in stats.iteritems():
             yield stat

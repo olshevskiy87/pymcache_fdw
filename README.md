@@ -73,6 +73,17 @@ installation
     ) SERVER pymcache_fdw_stat;
     ```
 
+ - foreign table to show current memcache settings
+
+    ```sql
+    $$ CREATE FOREIGN TABLE pymcache_stat_settings_test (
+        stat_name TEXT,
+        stat_value TEXT
+    ) SERVER pymcache_fdw_stat OPTIONS (
+        stats_cmd 'settings'
+    );
+    ```
+
 usage
 -----
 
@@ -139,6 +150,22 @@ WARNING:  Using default port: 11211
 (3 rows)
 ```
 
+- show "enabled" memcache settings
+
+```sql
+$$ select stat_name, stat_value
+   from pymcache_stat_settings_test
+   where stat_name ~* 'enabled';
+
+     stat_name     | stat_value
+-------------------+------------
+ cas_enabled       | yes
+ auth_enabled_sasl | False
+ detail_enabled    | no
+ flush_enabled     | yes
+(4 rows)
+```
+
 external links
 --------------
 
@@ -154,7 +181,7 @@ todo
  - [x] use named parameters when calling pymemcache methods
  - [x] add "update" query implementation
  - [x] set proper PymcacheFDW -> pymemcache methods mapping
- - [ ] implement `stats items/settings/slabs/sizes/conns` commands
+ - [x] implement `stats items/settings/slabs/sizes/conns` commands
  - [x] move `host` and `port` classes attributes to `__init__` as local variables
  - [x] move connection procedure to separate method
 
