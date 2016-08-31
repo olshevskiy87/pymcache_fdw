@@ -47,12 +47,12 @@ class PymcacheFDW(ForeignDataWrapper):
         log_to_postgres('exec quals: %s' % quals, DEBUG)
         log_to_postgres('exec columns: %s' % columns, DEBUG)
 
-        key_column_exist = 'key' in columns
+        key_column_exist = self._row_id_name in columns
 
         # define cache keys
         cache_keys = []
         for q in quals:
-            if (q.field_name != 'key' or
+            if (q.field_name != self._row_id_name or
                not (
                    isinstance(q.operator, unicode) and q.operator == u'=' or
                    isinstance(q.operator, tuple) and q.operator[0] == u'='
@@ -74,7 +74,7 @@ class PymcacheFDW(ForeignDataWrapper):
         for row in res_rows.iteritems():
             ret = {'value': row[1]}
             if key_column_exist:
-                ret['key'] = row[0]
+                ret[self._row_id_name] = row[0]
             yield ret
 
     @property
@@ -86,17 +86,19 @@ class PymcacheFDW(ForeignDataWrapper):
     def insert(self, item):
         log_to_postgres('insert value: %s' % item, DEBUG)
 
-        if 'key' not in item or 'value' not in item:
-            log_to_postgres('"key" and "value" must be specified', ERROR)
+        if self._row_id_name not in item or 'value' not in item:
+            log_to_postgres(
+                '"%s" and "value" must be specified' % self._row_id_name,
+                ERROR)
 
         try:
             res = self._client.add(
-                item['key'],
+                item[self._row_id_name],
                 item['value'],
                 expire=self._get_expire(item),
                 noreply=False)
             if not res:
-                raise Exception('key "%s" is already exist' % item['key'])
+                raise Exception('key "%s" is already exist' % item[self._row_id_name])
         except Exception as e:
             log_to_postgres(
                 'could not add cache item: %s' % str(e),
