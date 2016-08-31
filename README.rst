@@ -195,4 +195,4 @@ license
 
 Copyright (c) 2016 Dmitriy Olshevskiy. MIT LICENSE.
 
-See LICENSE.md for details.
+See LICENSE.txt for details.
