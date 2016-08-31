@@ -17,10 +17,19 @@ installation
 
 1. install python module
 
+ * from sources (github)
+
     ::
 
-        $ cd /path/to/pymcache_fdw
+        $ git clone https://github.com/olshevskiy87/pymcache_fdw
+        $ cd pymcache_fdw
         $ python setup.py install
+
+ * using pip
+
+    ::
+
+        $ pip install pymcache_fdw
 
 2. create extension "multicorn"
 
