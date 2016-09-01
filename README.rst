@@ -1,3 +1,6 @@
+.. image:: https://badge.fury.io/py/pymcache_fdw.svg
+    :target: https://pypi.python.org/pypi/pymcache-fdw
+
 ############
 pymcache_fdw
 ############
