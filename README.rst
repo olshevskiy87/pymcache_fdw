@@ -1,5 +1,4 @@
-.. image:: https://badge.fury.io/py/pymcache_fdw.svg
-    :target: https://pypi.python.org/pypi/pymcache-fdw
+|pypi_badge| |travis_badge|
 
 ############
 pymcache_fdw
@@ -199,3 +198,9 @@ license
 Copyright (c) 2016 Dmitriy Olshevskiy. MIT LICENSE.
 
 See LICENSE.txt for details.
+
+.. |pypi_badge| image:: https://badge.fury.io/py/pymcache_fdw.svg
+    :target: https://pypi.python.org/pypi/pymcache-fdw
+
+.. |travis_badge| image:: https://travis-ci.org/olshevskiy87/pymcache_fdw.svg?branch=master
+    :target: https://travis-ci.org/olshevskiy87/pymcache_fdw
