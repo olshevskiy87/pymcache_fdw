@@ -4,6 +4,7 @@ python:
 
 services:
   - postgresql
+  - memcached
 
 addons:
   postgresql: "9.4"
