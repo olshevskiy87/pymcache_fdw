@@ -17,4 +17,4 @@ install:
   - sudo python setup.py install
 
 script:
-  - psql -h localhost -U postgres -w -f test/queries.sql
+  - psql -h localhost -U postgres -w --set ON_ERROR_STOP=on -f test/queries.sql
