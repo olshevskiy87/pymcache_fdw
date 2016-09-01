@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.7"
+
+services:
+  - postgresql
+
+addons:
+  postgresql: "9.4"
+
+sudo: true
+
+install:
+  - sudo apt-get install -y pgxnclient build-essential python-dev postgresql-server-dev-9.4
+  - sudo pgxn install multicorn
+  - sudo python setup.py install
+
+script:
+  - psql -h localhost -U postgres -w -f test/queries.sql
