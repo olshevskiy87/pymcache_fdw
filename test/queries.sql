@@ -42,7 +42,8 @@ OPTIONS (
 
 CREATE FOREIGN TABLE pymcache_test (
     key TEXT,
-    value TEXT
+    value TEXT,
+    expire TEXT
 ) SERVER pymcache_fdw OPTIONS (
     host 'localhost',
     port '11211',
@@ -75,6 +76,12 @@ SELECT * FROM pymcache_test WHERE key IN ('born_to_die', 'k1');
 SELECT * FROM pymcache_test WHERE key = 'k2';
 
 DELETE FROM pymcache_test WHERE key = 'born_to_die';
+
+INSERT INTO pymcache_test(key, value, expire) VALUES('meaning_of_life', 42, 3600);
+
+SELECT value FROM pymcache_test WHERE key = 'meaning_of_life';
+
+DELETE FROM pymcache_test WHERE key IN ('meaning_of_life');
 
 -- get statistics
 
