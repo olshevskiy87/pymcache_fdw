@@ -1,4 +1,4 @@
-|pypi_badge| |travis_badge|
+|pypi_badge|
 
 ############
 pymcache_fdw
@@ -19,11 +19,11 @@ installation
 
 1. install python module
 
- * from sources (github)
+ * from sources (bitbucket)
 
     ::
 
-        $ git clone https://github.com/olshevskiy87/pymcache_fdw
+        $ git clone https://bitbucket.org/olshevskiy87/pymcache_fdw.git
         $ cd pymcache_fdw
         $ python setup.py install
 
@@ -201,6 +201,3 @@ See LICENSE.txt for details.
 
 .. |pypi_badge| image:: https://badge.fury.io/py/pymcache_fdw.svg
     :target: https://pypi.python.org/pypi/pymcache-fdw
-
-.. |travis_badge| image:: https://travis-ci.org/olshevskiy87/pymcache_fdw.svg?branch=master
-    :target: https://travis-ci.org/olshevskiy87/pymcache_fdw
