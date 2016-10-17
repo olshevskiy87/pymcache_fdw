@@ -20,15 +20,11 @@ CREATE EXTENSION IF NOT EXISTS multicorn;
 -- create fdw servers
 ---------------------
 
-DROP SERVER IF EXISTS pymcache_fdw CASCADE;
-
 CREATE SERVER pymcache_fdw
 FOREIGN DATA WRAPPER multicorn
 OPTIONS (
     wrapper 'pymcache_fdw.PymcacheFDW'
 );
-
-DROP SERVER IF EXISTS pymcache_fdw_stat CASCADE;
 
 CREATE SERVER pymcache_fdw_stat
 FOREIGN DATA WRAPPER multicorn
@@ -50,6 +46,13 @@ CREATE FOREIGN TABLE pymcache_test (
     row_id 'key'
 );
 
+CREATE FOREIGN TABLE pymcache_test_group (
+    key TEXT,
+    value TEXT
+) SERVER pymcache_fdw OPTIONS (
+    prefix 'group1_'
+);
+
 CREATE FOREIGN TABLE pymcache_stat_test (
     stat_name TEXT,
     stat_value TEXT
@@ -68,6 +71,8 @@ CREATE FOREIGN TABLE pymcache_stat_settings_test (
 
 -- manipulate memcache items
 
+-- ordinary keys
+
 INSERT INTO pymcache_test(key, value) VALUES('born_to_die', 'Lana Del Rey');
 
 UPDATE pymcache_test SET value = 'Grand Funk Railroad' WHERE key = 'born_to_die';
@@ -82,6 +87,16 @@ INSERT INTO pymcache_test(key, value, expire) VALUES('meaning_of_life', 42, 3600
 SELECT value FROM pymcache_test WHERE key = 'meaning_of_life';
 
 DELETE FROM pymcache_test WHERE key IN ('meaning_of_life');
+
+-- keys with prefix (i.e. groups)
+
+INSERT INTO pymcache_test_group(key, value) VALUES ('first_item', 'first value');
+SELECT * FROM pymcache_test_group WHERE key = 'first_item';
+
+UPDATE pymcache_test_group SET value = 'first updated value' WHERE key = 'first_item';
+SELECT * FROM pymcache_test_group WHERE key = 'first_item';
+
+DELETE FROM pymcache_test_group WHERE key IN ('first_item');
 
 -- get statistics
 

@@ -31,6 +31,13 @@ class PymcacheFDW(ForeignDataWrapper):
                 'Using default "expire" value: %s' % self._expire,
                 WARNING)
 
+        # "prefix" value
+        self._prefix = options.get('prefix', '')
+        if self._prefix is None:
+            self._prefix = ''
+        self._prefix_size = len(self._prefix)
+        log_to_postgres('Using "prefix" value: %s' % self._prefix, WARNING)
+
         self._client = utils.connect(options)
 
     def _get_expire(self, item=None):
@@ -41,6 +48,18 @@ class PymcacheFDW(ForeignDataWrapper):
             except:
                 pass
         return ret
+
+    def _make_full_key(self, key):
+        if not self._prefix:
+            return key
+
+        if isinstance(key, basestring):
+            key = '%s%s' % (self._prefix, key)
+        elif isinstance(key, list):
+            key = ['%s%s' % (self._prefix, k) for k in key]
+        else:
+            key = ''
+        return key
 
     # exec sql select-query
     def execute(self, quals, columns):
@@ -69,12 +88,12 @@ class PymcacheFDW(ForeignDataWrapper):
             log_to_postgres('cache keys are not specified', DEBUG)
             return
 
-        res_rows = self._client.get_multi(keys=cache_keys)
+        res_rows = self._client.get_multi(keys=self._make_full_key(cache_keys))
 
         for row in res_rows.iteritems():
             ret = {'value': row[1]}
             if key_column_exist:
-                ret[self._row_id_name] = row[0]
+                ret[self._row_id_name] = row[0][self._prefix_size:]
             yield ret
 
     @property
@@ -91,14 +110,15 @@ class PymcacheFDW(ForeignDataWrapper):
                 '"%s" and "value" must be specified' % self._row_id_name,
                 ERROR)
 
+        key = self._make_full_key(item[self._row_id_name])
         try:
             res = self._client.add(
-                item[self._row_id_name],
+                key,
                 item['value'],
                 expire=self._get_expire(item),
                 noreply=False)
             if not res:
-                raise Exception('key "%s" is already exist' % item[self._row_id_name])
+                raise Exception('key "%s" is already exist' % key)
         except Exception as e:
             log_to_postgres(
                 'could not add cache item: %s' % str(e),
@@ -114,7 +134,7 @@ class PymcacheFDW(ForeignDataWrapper):
 
         try:
             self._client.set(
-                key,
+                self._make_full_key(key),
                 item['value'],
                 expire=self._get_expire(item))
         except Exception as e:
@@ -126,7 +146,7 @@ class PymcacheFDW(ForeignDataWrapper):
     def delete(self, key):
         log_to_postgres('delete cache with key: %s' % key, DEBUG)
         try:
-            self._client.delete(key)
+            self._client.delete(self._make_full_key(key))
         except Exception as e:
             log_to_postgres(
                 'could not delete cache item with key "%s": %s' % (key, str(e)),

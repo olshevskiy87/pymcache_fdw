@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name='pymcache_fdw',
-    version='0.1.2',
+    version='0.2.0',
     description=('memcache fdw for postgresql'),
     long_description=read('README.rst'),
     author='Dmitriy Olshevskiy',

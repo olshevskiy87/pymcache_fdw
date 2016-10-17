@@ -78,6 +78,17 @@ installation
             expire '60' -- optional, default is 0 - never expire
         );
 
+ * foreign table to operate cache items with prefix in the keys
+
+    ::
+
+        $$ CREATE FOREIGN TABLE pymcache_test_group (
+            key TEXT,
+            value TEXT
+        ) SERVER pymcache_fdw OPTIONS (
+            prefix 'group1_'
+        );
+
  * foreign table to show general-purpose statistics
 
     ::
@@ -135,7 +146,7 @@ usage
        from pymcache_test
        where key in ('meaning_of_life', 'k1');
 
-    key              | value
+           key       | value
     -----------------+-------
     meaning_of_life  | 42
     (1 row)
@@ -147,6 +158,23 @@ usage
     $$ delete from pymcache_test
        where key = 'meaning_of_life';
     DELETE 1
+
+* set and get items with key prefix `group1_`
+
+::
+
+    $$ insert into pymcache_test_group(key, value)
+       values('first_item', 'first value');
+    INSERT 0 1
+
+    $$ select key, value
+       from pymcache_test_group
+       where key = 'first_item';
+
+        key     |    value
+    ------------+-------------
+     first_item | first value
+    (1 row)
 
 * show general-purpose statistics related to connections
 
