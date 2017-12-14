@@ -19,11 +19,11 @@ installation
 
 1. install python module
 
- * from sources (bitbucket)
+ * from sources (github)
 
     ::
 
-        $ git clone https://bitbucket.org/olshevskiy87/pymcache_fdw.git
+        $ git clone https://github.com/olshevskiy87/pymcache_fdw
         $ cd pymcache_fdw
         $ python setup.py install
 

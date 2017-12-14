@@ -16,5 +16,5 @@ setup(
     keywords='memcache postgres pgsql fdw wrapper',
     packages=['pymcache_fdw'],
     install_requires=['pymemcache'],
-    url='https://bitbucket.org/olshevskiy87/pymcache_fdw'
+    url='https://github.com/olshevskiy87/pymcache_fdw'
 )
