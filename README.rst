@@ -227,5 +227,5 @@ Copyright (c) 2016 Dmitriy Olshevskiy. MIT LICENSE.
 
 See LICENSE.txt for details.
 
-.. |pypi_badge| image:: https://badge.fury.io/py/pymcache_fdw.svg
+.. |pypi_badge| image:: https://badge.fury.io/py/pymcache-fdw.svg
     :target: https://pypi.python.org/pypi/pymcache-fdw
