@@ -1,4 +1,4 @@
-|pypi_badge|
+|pypi_badge| |license_badge| |codeclimate_badge|
 
 ############
 pymcache_fdw
@@ -229,3 +229,9 @@ See LICENSE.txt for details.
 
 .. |pypi_badge| image:: https://badge.fury.io/py/pymcache-fdw.svg
     :target: https://pypi.python.org/pypi/pymcache-fdw
+
+.. |license_badge| image:: https://img.shields.io/badge/License-MIT-yellow.svg
+    :target: https://opensource.org/licenses/MIT
+
+.. |codeclimate_badge| image:: https://api.codeclimate.com/v1/badges/022c6b058843d1521e8a/maintainability
+    :target: https://codeclimate.com/github/olshevskiy87/pymcache_fdw/maintainability
